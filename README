@@ -1,0 +1,29 @@
+What is it?
+===============
+
+This application for calculation Mandelbrot set in real time on NVIDIA CUDA technologies.
+
+How to use it?
+==========
+
+Building:
+$> make clean all
+rm -fv timer.o glut_window.o mandelbrot.o main.o mandelbrot
+removed 'timer.o'
+removed 'glut_window.o'
+removed 'mandelbrot.o'
+removed 'main.o'
+removed 'mandelbrot'
+nvcc   -c timer.cpp
+nvcc   -c glut_window.cpp
+nvcc   -c mandelbrot.cu
+nvcc   -c main.cpp
+nvcc -lGL -lX11 -lglut -lGLU timer.o glut_window.o mandelbrot.o main.o -o mandelbrot
+$>
+
+And run:
+$> ./mandelbrot 
+$>
+
+Enjoy!
+
