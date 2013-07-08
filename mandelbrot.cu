@@ -27,9 +27,9 @@
 //#define DIMX (64*4*4)
 //#define DIMY (64*4*3)
 
-#define ITER_COUNT 19
+#define ITER_COUNT 31
 
-__device__ short mandelbrot( int x, int y,/* int width, int height,*/ float angle ) {
+__device__ unsigned char mandelbrot( int x, int y, float angle ) {
     // project the screen coordinate into the complex plane
     const float cx = -2.0f + 3.0f * x / gridDim.x;
     const float cy = -1.125f + 2.25f * y / gridDim.y;
@@ -49,7 +49,7 @@ __device__ short mandelbrot( int x, int y,/* int width, int height,*/ float angl
     // z_0 = 0
     // z_n = z_(n-1)^2 + c
     // |z_n| <= 4
-    int i = 0;
+    unsigned char i = 0;
     for (i=0; i<ITER_COUNT; i++) {
         z = z * z + c;
         if (z.magnitude2() > 4)
@@ -59,29 +59,29 @@ __device__ short mandelbrot( int x, int y,/* int width, int height,*/ float angl
     return 0;
 }
 
-__global__ void kernel( unsigned short *ptr, float angle ) {
+__global__ void kernel( unsigned char *ptr, float angle ) {
     // map from blockIdx to pixel position
     int x = blockIdx.x;
     int y = blockIdx.y;
     int offset = x + y * gridDim.x;
 
     // now calculate the value at that position
-    short mandelbrotValue = mandelbrot( x, y, angle );
+    unsigned char mandelbrotValue = mandelbrot( x, y, angle );
     ptr[offset] = mandelbrotValue;
 }
 
-unsigned short* calculate_mandelbrot( int w, int h, float angle ) {
-    unsigned short *data_buf = (unsigned short *)calloc( w*h, sizeof(unsigned short) );
+unsigned char* calculate_mandelbrot( int w, int h, float angle ) {
+    unsigned char *data_buf = (unsigned char*)calloc( w*h, sizeof(unsigned char) );
     
-    unsigned short *dev_data_buf;
+    unsigned char *dev_data_buf;
 
-    HANDLE_ERROR( cudaMalloc( (void**)&dev_data_buf, w*h ) );
+    HANDLE_ERROR( cudaMalloc( (void**)&dev_data_buf, w*h*sizeof(unsigned char) ) );
 
     dim3 grid(w,h);
     kernel<<<grid,1>>>( dev_data_buf, angle );
 
     HANDLE_ERROR( cudaMemcpy( data_buf, dev_data_buf,
-                              w*h,
+                              w*h*sizeof(unsigned char),
                               cudaMemcpyDeviceToHost ) );
     HANDLE_ERROR( cudaFree( dev_data_buf ) );
   

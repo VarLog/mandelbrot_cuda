@@ -126,7 +126,7 @@ void GLUTWindow::DrawGLScene() {
   static Timer timer;
   
   static float angle = 0.0f;
-  unsigned short *dataBuf = ::calculate_mandelbrot( m_w_width, m_w_height, angle );
+  unsigned char *dataBuf = ::calculate_mandelbrot( m_w_width, m_w_height, angle );
   angle += 0.001f;
 
   // Clear The Screen And The Depth Buffer
@@ -135,31 +135,26 @@ void GLUTWindow::DrawGLScene() {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(-0.5, (m_w_width - 1) + 0.5, (m_w_height - 1) + 0.5, -0.5, -1.0, 1.0);
-
+  
   glPointSize(1.0f);
   glDisable(GL_POINT_SMOOTH);
 
   glBegin(GL_POINTS);
   glColor3f(0.0f, 0.0f, 0.0f);
   
-
-  // XXX Something wrong in frameBuffer array or in CUDA. Mandelbrot set drawing with artifacts.
-  // See: http://storage4.static.itmages.ru/i/13/0707/h_1373222020_7268279_f98f9b9961.png
-
   unsigned short frameBuffer[ m_w_width * m_w_height ];
-  memset( frameBuffer, 0, m_w_width * m_w_height );
+  memset( frameBuffer, 0, (m_w_width * m_w_height)*sizeof(unsigned short) );
 
   unsigned short *frameBufferPtr = frameBuffer;
-  const unsigned short *dataBufPtr = dataBuf;
+  const unsigned char *dataBufPtr = dataBuf;
   for( int j = 0;  j < m_w_height;  j++ ) {
-    for( int i = 0;  i < m_w_height;  i++ ) {
-      const unsigned char mandelIter = (unsigned char)*dataBufPtr;
+    for( int i = 0;  i < m_w_width;  i++ ) {
+      const unsigned char mandelIter = *dataBufPtr;
       *frameBufferPtr = ( mandelIter << 11 ) | ( mandelIter << 6 ) | mandelIter;
       ++dataBufPtr;
       ++frameBufferPtr;
     }
   }
-
   glEnd();
   
   glRasterPos2f(0.0f, m_w_height-1.0f);
