@@ -126,7 +126,7 @@ void GLUTWindow::DrawGLScene() {
   static Timer timer;
   
   static float angle = 0.0f;
-  unsigned char *dataBuf = ::calculate_mandelbrot( m_w_width, m_w_height, angle );
+  unsigned char *dataBuf = ::calculate_mandelbrot( m_w_width, m_w_height, m_iter_count, angle );
   angle += 0.001f;
 
   // Clear The Screen And The Depth Buffer
@@ -142,15 +142,18 @@ void GLUTWindow::DrawGLScene() {
   glBegin(GL_POINTS);
   glColor3f(0.0f, 0.0f, 0.0f);
   
-  unsigned short frameBuffer[ m_w_width * m_w_height ];
-  memset( frameBuffer, 0, (m_w_width * m_w_height)*sizeof(unsigned short) );
+  
+  unsigned int frameBuffer[ m_w_width * m_w_height ];
+  memset( frameBuffer, 0x0, (m_w_width * m_w_height)*sizeof(unsigned int) );
 
-  unsigned short *frameBufferPtr = frameBuffer;
+  unsigned int *frameBufferPtr = frameBuffer;
   const unsigned char *dataBufPtr = dataBuf;
   for( int j = 0;  j < m_w_height;  j++ ) {
     for( int i = 0;  i < m_w_width;  i++ ) {
-      const unsigned char mandelIter = *dataBufPtr;
-      *frameBufferPtr = ( mandelIter << 11 ) | ( mandelIter << 6 ) | mandelIter;
+      const unsigned int mandelIter = *dataBufPtr;
+      unsigned int c;
+      c = ( (mandelIter==0) ? 0 : ceil( 256.0f * (1.0f -  (float)mandelIter / (float)m_iter_count ) ) );
+      *frameBufferPtr = (c << 24) | (c << 16) | (c << 8) | 0xff;
       ++dataBufPtr;
       ++frameBufferPtr;
     }
@@ -158,7 +161,7 @@ void GLUTWindow::DrawGLScene() {
   glEnd();
   
   glRasterPos2f(0.0f, m_w_height-1.0f);
-  glDrawPixels( m_w_width, m_w_height, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, frameBuffer );
+  glDrawPixels( m_w_width, m_w_height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, frameBuffer );
   
   glEnd();
   free(dataBuf);
@@ -212,10 +215,12 @@ extern "C" void keyCallback( unsigned char key, int x, int y ) {
     g_current_instance->keyPressed( key, x, y );
 }
 
-GLUTWindow::GLUTWindow( int argc, char **argv, 
-                        int w_width /* = 640 */, int w_height /* = 800 */ )
+GLUTWindow::GLUTWindow( int argc, char **argv,  
+                        int w_width /* = 640 */, int w_height /* = 800 */,
+                        int iter_count /* = 32 */)
   : m_w_width(w_width),
-    m_w_height(w_height)
+    m_w_height(w_height),
+    m_iter_count(iter_count)
 {
   g_current_instance = this;
   /* Initialize GLUT state */  

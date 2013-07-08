@@ -24,12 +24,7 @@
 #include "cuComplex.h"
 #include "mandelbrot.h"
 
-//#define DIMX (64*4*4)
-//#define DIMY (64*4*3)
-
-#define ITER_COUNT 31
-
-__device__ unsigned char mandelbrot( int x, int y, float angle ) {
+__device__ unsigned char mandelbrot( int x, int y, int iter_count, float angle ) {
     // project the screen coordinate into the complex plane
     const float cx = -2.0f + 3.0f * x / gridDim.x;
     const float cy = -1.125f + 2.25f * y / gridDim.y;
@@ -50,27 +45,28 @@ __device__ unsigned char mandelbrot( int x, int y, float angle ) {
     // z_n = z_(n-1)^2 + c
     // |z_n| <= 4
     unsigned char i = 0;
-    for (i=0; i<ITER_COUNT; i++) {
+    for( i = 0; i < iter_count; i++ ) {
         z = z * z + c;
-        if (z.magnitude2() > 4)
+        if( z.magnitude2() > 4 ) {
             return i+1;
+        }
     }
 
     return 0;
 }
 
-__global__ void kernel( unsigned char *ptr, float angle ) {
+__global__ void kernel( unsigned char *ptr, int iter_count, float angle ) {
     // map from blockIdx to pixel position
     int x = blockIdx.x;
     int y = blockIdx.y;
     int offset = x + y * gridDim.x;
 
     // now calculate the value at that position
-    unsigned char mandelbrotValue = mandelbrot( x, y, angle );
+    unsigned char mandelbrotValue = mandelbrot( x, y, iter_count, angle );
     ptr[offset] = mandelbrotValue;
 }
 
-unsigned char* calculate_mandelbrot( int w, int h, float angle ) {
+unsigned char* calculate_mandelbrot( int w, int h, int iter_count, float angle ) {
     unsigned char *data_buf = (unsigned char*)calloc( w*h, sizeof(unsigned char) );
     
     unsigned char *dev_data_buf;
@@ -78,7 +74,7 @@ unsigned char* calculate_mandelbrot( int w, int h, float angle ) {
     HANDLE_ERROR( cudaMalloc( (void**)&dev_data_buf, w*h*sizeof(unsigned char) ) );
 
     dim3 grid(w,h);
-    kernel<<<grid,1>>>( dev_data_buf, angle );
+    kernel<<<grid,1>>>( dev_data_buf, iter_count, angle );
 
     HANDLE_ERROR( cudaMemcpy( data_buf, dev_data_buf,
                               w*h*sizeof(unsigned char),

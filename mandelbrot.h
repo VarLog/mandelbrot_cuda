@@ -21,6 +21,6 @@
 #ifndef __MANDELBROT_H__
 #define __MANDELBROT_H__
 
-unsigned char* calculate_mandelbrot( int w, int h, float angle );
+unsigned char* calculate_mandelbrot( int w, int h, int iter_count, float angle );
 
 #endif  // __MANDELBROT_H__

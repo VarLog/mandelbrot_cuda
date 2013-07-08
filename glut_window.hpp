@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 
 struct GLUTWindow {
   /* ASCII code for the escape key. */
@@ -42,6 +43,9 @@ struct GLUTWindow {
   /* The number of our GLUT window */
   int m_window;
   
+  /* The number of iteration Mandelbrot algoritm */
+  int m_iter_count;
+
   /* base display list for the font set */
   GLuint m_font_base;
 
@@ -57,7 +61,7 @@ public:
   void keyPressed(unsigned char key, int x, int y);
 
 public:
-  GLUTWindow( int argc, char **argv, int w_width = 800, int w_height = 640 );
+  GLUTWindow( int argc, char **argv, int w_width = 800, int w_height = 640, int iter_count = 32 );
 };
 
 #endif  // __GLUT_WINDOW_H__
