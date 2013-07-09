@@ -19,11 +19,37 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "glut_window.hpp"
 
+void usage( const char *appname ) {
+  fprintf( stderr, "Usage:\n\t%s [<iter_number>]\n\tDefault: 64\n", appname );
+  exit(EXIT_FAILURE);
+}
+
 int main( int argc, char **argv ) {
-  GLUTWindow w(argc, argv, 64);
+  if( argc == 1 ) {
+    
+    // default
+    GLUTWindow w(argc, argv, 64);
+
+  } else if( argc > 2 ) {
+    usage( argv[0] );
+  } else if( argc == 2 && ( !strcmp( argv[1], "-h" ) || !strcmp( argv[1], "--help" ) ) ) {
+    usage( argv[0] );
+  } else {
+    
+    int iter_count;
+    if( !sscanf( argv[1], "%d", &iter_count ) ) {
+      usage( argv[0] );
+      exit(EXIT_FAILURE);
+    }
+
+    GLUTWindow w(argc, argv, iter_count);
+  
+  }
 
   return 0;
 }
