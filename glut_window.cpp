@@ -143,25 +143,37 @@ void GLUTWindow::DrawGLScene() {
   glColor3f(0.0f, 0.0f, 0.0f);
   
   
-  unsigned int frameBuffer[ m_w_width * m_w_height ];
-  memset( frameBuffer, 0x0, (m_w_width * m_w_height)*sizeof(unsigned int) );
+  unsigned char frameBuffer[ m_w_width * m_w_height * 3 ]; // GL_RGB, GL_UNSIGNED_BYTE
+  memset( frameBuffer, 0x0, (m_w_width * m_w_height * 3)*sizeof(unsigned char) );
 
-  unsigned int *frameBufferPtr = frameBuffer;
+  unsigned char *frameBufferPtr = frameBuffer;
   const unsigned char *dataBufPtr = dataBuf;
   for( int j = 0;  j < m_w_height;  j++ ) {
     for( int i = 0;  i < m_w_width;  i++ ) {
       const unsigned int mandelIter = *dataBufPtr;
-      unsigned int c;
+      unsigned char c;
       c = ( (mandelIter==0) ? 0 : ceil( 256.0f * (1.0f -  (float)mandelIter / (float)m_iter_count ) ) );
-      *frameBufferPtr = (c << 24) | (c << 16) | (c << 8) | 0xff;
+      
+      // WARNING! ceil() function and other float-arithmetic reduce performance!!
+      /*
+      frameBufferPtr[0] = ceil( (float)c * 1.0f );
+      frameBufferPtr[1] = ceil( (float)c * 0.3f );
+      frameBufferPtr[2] = ceil( (float)c * 0.7f );
+      frameBufferPtr+=3;
+      */
+
+      frameBufferPtr[0] = c;
+      frameBufferPtr[1] = c;
+      frameBufferPtr[2] = c;
+      frameBufferPtr+=3;
+
       ++dataBufPtr;
-      ++frameBufferPtr;
     }
   }
   glEnd();
   
   glRasterPos2f(0.0f, m_w_height-1.0f);
-  glDrawPixels( m_w_width, m_w_height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, frameBuffer );
+  glDrawPixels( m_w_width, m_w_height, GL_RGB, GL_UNSIGNED_BYTE, frameBuffer );
   
   glEnd();
   free(dataBuf);
