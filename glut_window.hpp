@@ -61,7 +61,7 @@ public:
   void keyPressed(unsigned char key, int x, int y);
 
 public:
-  GLUTWindow( int argc, char **argv, int w_width = 800, int w_height = 640, int iter_count = 32 );
+  GLUTWindow( int argc, char **argv, int iter_count = 32, int w_width = 800, int w_height = 640 );
 };
 
 #endif  // __GLUT_WINDOW_H__

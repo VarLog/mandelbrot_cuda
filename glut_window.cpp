@@ -215,9 +215,8 @@ extern "C" void keyCallback( unsigned char key, int x, int y ) {
     g_current_instance->keyPressed( key, x, y );
 }
 
-GLUTWindow::GLUTWindow( int argc, char **argv,  
-                        int w_width /* = 640 */, int w_height /* = 800 */,
-                        int iter_count /* = 32 */)
+GLUTWindow::GLUTWindow( int argc, char **argv, int iter_count /* = 32 */, 
+                        int w_width /* = 640 */, int w_height /* = 800 */ )
   : m_w_width(w_width),
     m_w_height(w_height),
     m_iter_count(iter_count)

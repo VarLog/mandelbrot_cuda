@@ -23,7 +23,7 @@
 #include "glut_window.hpp"
 
 int main( int argc, char **argv ) {
-  GLUTWindow w(argc, argv);
+  GLUTWindow w(argc, argv, 64);
 
   return 0;
 }
